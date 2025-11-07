@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Чтение книги - Онлайн Кітапхана</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .reader-header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .back-button:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .reader-title {
+            color: white;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .reader-container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .reader-frame {
+            width: 100%;
+            max-width: 1400px;
+            height: calc(100vh - 100px);
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .loading {
+            text-align: center;
+            color: white;
+            padding: 40px;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            text-align: center;
+            color: white;
+            padding: 40px;
+            display: none;
+        }
+
+        .error-message h2 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .error-message p {
+            opacity: 0.9;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .reader-header {
+                flex-direction: column;
+                gap: 10px;
+                text-align: center;
+            }
+
+            .reader-frame {
+                height: calc(100vh - 140px);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="reader-header">
+        <a href="javascript:history.back()" class="back-button">
+            ← Назад / Артқа
+        </a>
+        <div class="reader-title">Чтение книги / Кітапты оқу</div>
+        <div style="width: 120px;"></div> <!-- Spacer for alignment -->
+    </div>
+
+    <div class="reader-container">
+        <div id="loadingIndicator" class="loading">
+            <div class="loading-spinner"></div>
+            <p>Загрузка книги... / Кітап жүктелуде...</p>
+        </div>
+
+        <div id="errorMessage" class="error-message">
+            <h2>Ошибка загрузки / Жүктеу қатесі</h2>
+            <p>Не удалось загрузить книгу. Возможно, она недоступна для онлайн чтения.</p>
+            <p>Кітапты жүктеу мүмкін болмады. Ол онлайн оқу үшін қолжетімсіз болуы мүмкін.</p>
+            <a href="javascript:history.back()" class="back-button">Вернуться назад / Артқа оралу</a>
+        </div>
+
+        <div id="readerFrame" class="reader-frame" style="display: none;">
+            <iframe id="bookIframe" allow="fullscreen"></iframe>
+        </div>
+    </div>
+
+    <script th:inline="javascript">
+        const workId = /*[[${workId}]]*/ 'OL45804W';
+        
+        function loadBook() {
+            const iframe = document.getElementById('bookIframe');
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            const errorMessage = document.getElementById('errorMessage');
+            const readerFrame = document.getElementById('readerFrame');
+
+            // OpenLibrary предоставляет встроенный просмотрщик через BookReader
+            // Формат: https://openlibrary.org/works/{workId}
+            const bookUrl = `https://openlibrary.org/works/${workId}`;
+            
+            iframe.src = bookUrl;
+
+            // Обработка загрузки
+            iframe.onload = function() {
+                loadingIndicator.style.display = 'none';
+                readerFrame.style.display = 'block';
+            };
+
+            iframe.onerror = function() {
+                loadingIndicator.style.display = 'none';
+                errorMessage.style.display = 'block';
+            };
+
+            // Таймаут на случай если iframe не загрузится
+            setTimeout(() => {
+                if (loadingIndicator.style.display !== 'none') {
+                    loadingIndicator.style.display = 'none';
+                    readerFrame.style.display = 'block';
+                }
+            }, 3000);
+        }
+
+        // Загружаем книгу при загрузке страницы
+        window.addEventListener('load', loadBook);
+    </script>
+</body>
+</html>

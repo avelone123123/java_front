@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вход - Онлайн Кітапхана</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Main Stylesheet -->
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <nav>
+                <a href="/" class="logo">
+                    <span>Онлайн Кітапхана</span>
+                </a>
+                <ul class="nav-links">
+                    <li><a href="/">Главная / Басты</a></li>
+                    <li><a href="/books">Каталог / Каталог</a></li>
+                    <li><a href="/register">Регистрация / Тіркелу</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="form-container">
+            <h1 class="form-title">Вход в систему<br>Жүйеге кіру</h1>
+
+            <!-- Сообщение об ошибке -->
+            <div th:if="${param.error}" class="alert alert-error" style="margin-bottom: 20px;">
+                Неверное имя пользователя или пароль / Қате пайдаланушы аты немесе құпия сөз
+            </div>
+
+            <!-- Сообщение об успешном выходе -->
+            <div th:if="${param.logout}" class="alert alert-success" style="margin-bottom: 20px;">
+                Вы успешно вышли из системы / Сіз жүйеден сәтті шықтыңыз
+            </div>
+
+            <form th:action="@{/login}" method="post">
+                <div class="form-group">
+                    <label for="username">
+                        Имя пользователя / Пайдаланушы аты
+                    </label>
+                    <input type="text" 
+                           id="username" 
+                           name="username" 
+                           placeholder="Введите имя пользователя / Пайдаланушы атын енгізіңіз"
+                           required 
+                           autofocus>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">
+                        Пароль / Құпия сөз
+                    </label>
+                    <input type="password" 
+                           id="password" 
+                           name="password" 
+                           placeholder="Введите пароль / Құпия сөзді енгізіңіз"
+                           required>
+                </div>
+
+                <div class="form-group" style="display: flex; align-items: center; gap: 10px;">
+                    <input type="checkbox" 
+                           id="remember-me" 
+                           name="remember-me" 
+                           style="width: auto;">
+                    <label for="remember-me" style="margin: 0;">
+                        Запомнить меня / Мені есте сақта
+                    </label>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">
+                        🚀 Войти / Кіру
+                    </button>
+                </div>
+            </form>
+
+            <div class="form-link">
+                Нет аккаунта? / Аккаунт жоқ па?
+                <a href="/register">Зарегистрироваться / Тіркелу</a>
+            </div>
+
+            <div class="form-link" style="margin-top: 10px;">
+                <a href="/">← Вернуться на главную / Басты бетке оралу</a>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 Онлайн Кітапхана. Все права защищены / Барлық құқықтар қорғалған.</p>
+        </div>
+    </footer>
+
+    <!-- Main JavaScript -->
+    <script th:src="@{/js/main.js}"></script>
+</body>
+</html>

@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Каталог книг - Онлайн Кітапхана</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Main Stylesheet -->
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <nav>
+                <a href="/" class="logo">
+                    <span>Онлайн Кітапхана</span>
+                </a>
+                <ul class="nav-links">
+                    <li><a href="/">Главная / Басты</a></li>
+                    <li><a href="/books" class="active">Каталог / Каталог</a></li>
+                    <li th:if="${isAuthenticated}">
+                        <a href="/profile">Профиль</a>
+                    </li>
+                    <li th:if="${isAuthenticated}">
+                        <form th:action="@{/logout}" method="post" style="display: inline;">
+                            <button type="submit" data-tooltip="Выйти из системы">Выход / Шығу</button>
+                        </form>
+                    </li>
+                    <li th:unless="${isAuthenticated}">
+                        <a href="/login">Вход</a>
+                    </li>
+                    <li th:unless="${isAuthenticated}">
+                        <a href="/register">Регистрация</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="hero" style="padding: 40px 20px;">
+            <h1 style="font-size: 42px;">
+                <span>Каталог книг / Кітаптар каталогы</span>
+            </h1>
+            <p>Исследуйте миллионы книг</p>
+
+            <div class="search-box">
+                <input type="text" 
+                       id="searchInput" 
+                       placeholder="Поиск по названию, автору, ISBN... / Атауы, авторы, ISBN бойынша іздеу..."
+                       autocomplete="off">
+                <button class="search-btn" onclick="searchBooks()">
+                    Поиск / Іздеу
+                </button>
+            </div>
+        </section>
+
+        <!-- Loading indicator -->
+        <div id="loadingIndicator" style="display: none; text-align: center; padding: 40px;">
+            <div class="loading-spinner"></div>
+            <p style="margin-top: 20px; color: white; font-size: 18px;">Загрузка книг... / Кітаптар жүктелуде...</p>
+        </div>
+
+        <!-- Books Grid -->
+        <div id="booksGrid" class="books-grid"></div>
+
+        <!-- No results message -->
+        <div id="noResults" style="display: none; text-align: center; padding: 60px 20px;">
+
+            <h2 style="color: white; margin-bottom: 10px;">Книги не найдены / Кітаптар табылмады</h2>
+            <p style="color: rgba(255,255,255,0.8);">Попробуйте изменить поисковый запрос / Іздеу сұранысын өзгертіп көріңіз</p>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 Онлайн Кітапхана. Все права защищены / Барлық құқықтар қорғалған.</p>
+        </div>
+    </footer>
+
+    <!-- Main JavaScript -->
+    <script th:src="@{/js/main.js}"></script>
+    
+    <script>
+        const booksGrid = document.getElementById('booksGrid');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const noResults = document.getElementById('noResults');
+        const searchInput = document.getElementById('searchInput');
+
+        // Поиск книг
+        async function searchBooks() {
+            const query = searchInput.value.trim();
+            if (!query) {
+                showToast('Введите поисковый запрос / Іздеу сұранысын енгізіңіз', 'warning');
+                return;
+            }
+
+            showLoading();
+            booksGrid.innerHTML = '';
+            noResults.style.display = 'none';
+
+            try {
+                // Используем Open Library Search API
+                const response = await fetch(`https://openlibrary.org/search.json?q=${encodeURIComponent(query)}&limit=50`);
+                const data = await response.json();
+
+                hideLoading();
+
+                if (data.docs && data.docs.length > 0) {
+                    displayBooks(data.docs);
+                    showToast(`Найдено ${data.docs.length} книг / ${data.docs.length} кітап табылды`, 'success');
+                } else {
+                    noResults.style.display = 'block';
+                }
+            } catch (error) {
+                hideLoading();
+                console.error('Ошибка поиска:', error);
+                showToast('Ошибка при поиске книг / Кітаптарды іздеу кезінде қате', 'error');
+            }
+        }
+
+        // Загрузка популярных книг при открытии страницы
+        async function loadPopularBooks() {
+            showLoading();
+            booksGrid.innerHTML = '';
+
+            try {
+                // Загружаем популярные книги (например, классическую литературу)
+                const subjects = ['fiction', 'science', 'history', 'philosophy', 'art'];
+                const randomSubject = subjects[Math.floor(Math.random() * subjects.length)];
+                
+                const response = await fetch(`https://openlibrary.org/subjects/${randomSubject}.json?limit=50`);
+                const data = await response.json();
+
+                hideLoading();
+
+                if (data.works && data.works.length > 0) {
+                    // Преобразуем формат данных для единообразия
+                    const books = data.works.map(work => ({
+                        title: work.title,
+                        author_name: work.authors ? work.authors.map(a => a.name) : ['Unknown'],
+                        first_publish_year: work.first_publish_year,
+                        cover_i: work.cover_id,
+                        key: work.key,
+                        subject: work.subject ? work.subject.slice(0, 3) : []
+                    }));
+                    displayBooks(books);
+                } else {
+                    noResults.style.display = 'block';
+                }
+            } catch (error) {
+                hideLoading();
+                console.error('Ошибка загрузки книг:', error);
+                showToast('Ошибка при загрузке книг / Кітаптарды жүктеу кезінде қате', 'error');
+            }
+        }
+
+        // Отображение книг
+        function displayBooks(books) {
+            booksGrid.innerHTML = '';
+            
+            books.forEach((book, index) => {
+                const bookCard = document.createElement('a');
+                bookCard.className = 'book-card';
+                bookCard.style.animationDelay = `${index * 0.05}s`;
+                
+                // Формируем URL для детальной страницы
+                const bookKey = book.key || (book.cover_edition_key ? `/works/${book.cover_edition_key}` : '');
+                bookCard.href = `/book-details?key=${encodeURIComponent(bookKey)}`;
+
+                // Обложка книги
+                const coverUrl = book.cover_i 
+                    ? `https://covers.openlibrary.org/b/id/${book.cover_i}-M.jpg`
+                    : 'https://via.placeholder.com/200x300?text=No+Cover';
+
+                // Авторы
+                const authors = Array.isArray(book.author_name) 
+                    ? book.author_name.join(', ') 
+                    : (book.author_name || 'Unknown Author');
+
+                // Год публикации
+                const year = book.first_publish_year || 'N/A';
+
+                // Жанры/темы
+                const subjects = Array.isArray(book.subject) 
+                    ? book.subject.slice(0, 2).join(', ') 
+                    : '';
+
+                bookCard.innerHTML = `
+                    <img src="${coverUrl}" 
+                         alt="${book.title}" 
+                         class="book-cover"
+                         onerror="this.src='https://via.placeholder.com/200x300?text=No+Cover'">
+                    <div class="book-info">
+                        <h3 class="book-title">${book.title}</h3>
+                        <p class="book-author">✍️ ${authors}</p>
+                        <div class="book-meta">
+                            <span>📅 ${year}</span>
+                            ${subjects ? `<span>🏷️ ${subjects}</span>` : ''}
+                        </div>
+                    </div>
+                `;
+
+                booksGrid.appendChild(bookCard);
+            });
+        }
+
+        function showLoading() {
+            loadingIndicator.style.display = 'block';
+            booksGrid.style.display = 'none';
+        }
+
+        function hideLoading() {
+            loadingIndicator.style.display = 'none';
+            booksGrid.style.display = 'grid';
+        }
+
+        // Поиск по Enter
+        searchInput.addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                searchBooks();
+            }
+        });
+
+        // Проверяем URL параметры для поиска
+        const urlParams = new URLSearchParams(window.location.search);
+        const searchQuery = urlParams.get('search');
+
+        if (searchQuery) {
+            searchInput.value = searchQuery;
+            searchBooks();
+        } else {
+            // Загружаем популярные книги при открытии страницы
+            loadPopularBooks();
+        }
+    </script>
+</body>
+</html>

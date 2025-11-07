@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ошибка - Онлайн Кітапхана</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .error-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 60px 40px;
+            text-align: center;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        .error-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+        }
+
+        .error-code {
+            font-size: 72px;
+            font-weight: bold;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+
+        .error-title {
+            font-size: 32px;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .error-message {
+            font-size: 18px;
+            color: #666;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .error-details {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            text-align: left;
+        }
+
+        .error-details p {
+            margin: 10px 0;
+            font-size: 14px;
+            color: #555;
+        }
+
+        .error-details strong {
+            color: #333;
+        }
+
+        .btn-home {
+            display: inline-block;
+            padding: 15px 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn-home:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-back {
+            display: inline-block;
+            margin-left: 15px;
+            padding: 15px 40px;
+            background: white;
+            color: #667eea;
+            text-decoration: none;
+            border: 2px solid #667eea;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .btn-back:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        @media (max-width: 480px) {
+            .error-container {
+                padding: 40px 20px;
+            }
+
+            .error-code {
+                font-size: 48px;
+            }
+
+            .error-title {
+                font-size: 24px;
+            }
+
+            .btn-home, .btn-back {
+                display: block;
+                margin: 10px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <div class="error-icon">😕</div>
+        
+        <div class="error-code" th:text="${status} ?: '500'">500</div>
+        
+        <h1 class="error-title">
+            <span th:if="${status == 404}">Страница не найдена / Бет табылмады</span>
+            <span th:if="${status == 403}">Доступ запрещен / Қатынау тыйым салынған</span>
+            <span th:if="${status == 500}">Внутренняя ошибка сервера / Сервердің ішкі қатесі</span>
+            <span th:if="${status != 404 && status != 403 && status != 500}">Произошла ошибка / Қате болды</span>
+        </h1>
+        
+        <p class="error-message">
+            <span th:if="${status == 404}">
+                К сожалению, запрашиваемая страница не существует.<br>
+                Өкінішке орай, сұралған бет жоқ.
+            </span>
+            <span th:if="${status == 403}">
+                У вас нет прав для доступа к этой странице.<br>
+                Бұл бетке қатынау құқығыңыз жоқ.
+            </span>
+            <span th:if="${status == 500}">
+                Что-то пошло не так на сервере. Мы уже работаем над исправлением.<br>
+                Серверде бірдеңе дұрыс болмады. Біз түзетумен айналысамыз.
+            </span>
+            <span th:if="${status != 404 && status != 403 && status != 500}">
+                Произошла непредвиденная ошибка. Пожалуйста, попробуйте позже.<br>
+                Күтпеген қате болды. Кейінірек қайталап көріңіз.
+            </span>
+        </p>
+
+        <div class="error-details" th:if="${error != null or message != null or path != null}">
+            <p th:if="${timestamp}"><strong>Время / Уақыт:</strong> <span th:text="${timestamp}"></span></p>
+            <p th:if="${status}"><strong>Код ошибки / Қате коды:</strong> <span th:text="${status}"></span></p>
+            <p th:if="${error}"><strong>Тип / Түрі:</strong> <span th:text="${error}"></span></p>
+            <p th:if="${path}"><strong>Путь / Жол:</strong> <span th:text="${path}"></span></p>
+            <p th:if="${message}"><strong>Сообщение / Хабарлама:</strong> <span th:text="${message}"></span></p>
+        </div>
+
+        <div>
+            <a href="/" class="btn-home">На главную / Басты бетке</a>
+            <a href="javascript:history.back()" class="btn-back">← Назад / Артқа</a>
+        </div>
+    </div>
+</body>
+</html>

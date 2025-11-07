@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Детали книги - Онлайн Кітапхана</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Main Stylesheet -->
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    
+    <style>
+        .book-details-container {
+            max-width: 1000px;
+            margin: 40px auto;
+            background: var(--card-gradient);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: var(--border-radius-xl);
+            padding: 48px;
+            box-shadow: var(--shadow-xl);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            animation: fadeInUp 0.8s ease;
+        }
+
+        .book-header {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        .book-cover-large {
+            width: 100%;
+            height: 450px;
+            object-fit: cover;
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--shadow-lg);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .book-info-main h1 {
+            font-size: 36px;
+            margin-bottom: 16px;
+            color: var(--text-primary);
+            font-weight: 800;
+        }
+
+        .book-author {
+            font-size: 20px;
+            margin-bottom: 24px;
+            opacity: 0.9;
+        }
+
+        .book-meta-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .meta-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 12px 16px;
+            border-radius: var(--border-radius-md);
+            font-size: 14px;
+        }
+
+        .meta-label {
+            font-weight: 600;
+            margin-right: 8px;
+        }
+
+        .book-description {
+            margin: 32px 0;
+            line-height: 1.8;
+            font-size: 16px;
+        }
+
+        .book-subjects {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 24px 0;
+        }
+
+        .subject-tag {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            transition: all var(--transition-normal);
+        }
+
+        .subject-tag:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 16px;
+            margin-top: 32px;
+            flex-wrap: wrap;
+        }
+
+        @media (max-width: 768px) {
+            .book-header {
+                grid-template-columns: 1fr;
+            }
+
+            .book-details-container {
+                padding: 24px;
+            }
+
+            .book-meta-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <nav>
+                <a href="/" class="logo">
+                    <span>Онлайн Кітапхана</span>
+                </a>
+                <ul class="nav-links">
+                    <li><a href="/">Главная / Басты</a></li>
+                    <li><a href="/books">Каталог / Каталог</a></li>
+                    <li th:if="${isAuthenticated}">
+                        <a href="/profile">Профиль</a>
+                    </li>
+                    <li th:if="${isAuthenticated}">
+                        <form th:action="@{/logout}" method="post" style="display: inline;">
+                            <button type="submit" data-tooltip="Выйти из системы">Выход / Шығу</button>
+                        </form>
+                    </li>
+                    <li th:unless="${isAuthenticated}">
+                        <a href="/login">Вход</a>
+                    </li>
+                    <li th:unless="${isAuthenticated}">
+                        <a href="/register">Регистрация</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- Loading indicator -->
+        <div id="loadingIndicator" style="display: block; text-align: center; padding: 80px 20px;">
+            <div class="loading-spinner"></div>
+            <p style="margin-top: 20px; color: white; font-size: 18px;">Загрузка информации о книге... / Кітап туралы ақпарат жүктелуде...</p>
+        </div>
+
+        <!-- Book Details Container -->
+        <div id="bookDetails" class="book-details-container" style="display: none;">
+            <a href="/books" class="btn btn-secondary" style="margin-bottom: 24px; display: inline-block;">
+                ← Назад к каталогу / Каталогқа оралу
+            </a>
+
+            <div class="book-header">
+                <div>
+                    <img id="bookCover" class="book-cover-large" alt="Book Cover">
+                </div>
+                <div class="book-info-main">
+                    <h1 id="bookTitle">Загрузка...</h1>
+                    <p class="book-author" id="bookAuthor">Автор загружается...</p>
+                    
+                    <div class="book-meta-grid" id="bookMetaGrid">
+                        <!-- Meta information will be inserted here -->
+                    </div>
+
+                    <div class="action-buttons">
+                        <button class="btn btn-primary" onclick="addToLibrary()">
+                            Добавить в избранное / Таңдаулыға қосу
+                        </button>
+                        <a id="readOnlineLink" href="#" target="_blank" class="btn btn-secondary">
+                            Читать онлайн / Онлайн оқу
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="book-description">
+                <h2 style="margin-bottom: 16px; font-size: 24px;">Описание / Сипаттама</h2>
+                <p id="bookDescription">Описание загружается... / Сипаттама жүктелуде...</p>
+            </div>
+
+            <div id="bookSubjectsContainer" style="display: none;">
+                <h3 style="margin-bottom: 16px; font-size: 20px;">🏷️ Темы и жанры / Тақырыптар мен жанрлар</h3>
+                <div class="book-subjects" id="bookSubjects">
+                    <!-- Subjects will be inserted here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Error message -->
+        <div id="errorMessage" style="display: none; text-align: center; padding: 80px 20px;">
+            <div style="font-size: 64px; margin-bottom: 20px;">😞</div>
+            <h2 style="color: white; margin-bottom: 10px;">Книга не найдена / Кітап табылмады</h2>
+            <p style="color: rgba(255,255,255,0.8); margin-bottom: 24px;">Не удалось загрузить информацию о книге / Кітап туралы ақпаратты жүктеу мүмкін болмады</p>
+            <a href="/books" class="btn btn-primary">← Вернуться к каталогу / Каталогқа оралу</a>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 Онлайн Кітапхана. Все права защищены / Барлық құқықтар қорғалған.</p>
+        </div>
+    </footer>
+
+    <!-- Main JavaScript -->
+    <script th:src="@{/js/main.js(v=2)}"></script>
+    
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const bookKey = urlParams.get('key');
+
+        async function loadBookDetails() {
+            if (!bookKey) {
+                showError();
+                return;
+            }
+
+            try {
+                // Загружаем информацию о книге
+                const response = await fetch(`https://openlibrary.org${bookKey}.json`);
+                if (!response.ok) throw new Error('Book not found');
+                
+                const book = await response.json();
+                // Добавляем key в объект книги
+                book.key = bookKey;
+
+                // Загружаем информацию об авторах
+                let authorNames = 'Unknown Author';
+                if (book.authors && book.authors.length > 0) {
+                    const authorPromises = book.authors.map(author => 
+                        fetch(`https://openlibrary.org${author.author.key}.json`).then(r => r.json())
+                    );
+                    const authors = await Promise.all(authorPromises);
+                    authorNames = authors.map(a => a.name).join(', ');
+                }
+
+                displayBookDetails(book, authorNames);
+            } catch (error) {
+                console.error('Error loading book:', error);
+                showError();
+            }
+        }
+
+        function displayBookDetails(book, authorNames) {
+            // Сохраняем текущую книгу
+            currentBook = book;
+            currentBook.authorNames = authorNames; // Сохраняем имена авторов
+            
+            document.getElementById('loadingIndicator').style.display = 'none';
+            document.getElementById('bookDetails').style.display = 'block';
+
+            // Заголовок
+            document.getElementById('bookTitle').textContent = book.title || 'Без названия';
+            document.getElementById('bookAuthor').textContent = authorNames;
+
+            // Обложка
+            const coverImg = document.getElementById('bookCover');
+            if (book.covers && book.covers.length > 0) {
+                coverImg.src = `https://covers.openlibrary.org/b/id/${book.covers[0]}-L.jpg`;
+            } else {
+                coverImg.src = 'https://via.placeholder.com/300x450?text=No+Cover';
+            }
+            coverImg.alt = book.title;
+
+            // Метаданные
+            const metaGrid = document.getElementById('bookMetaGrid');
+            metaGrid.innerHTML = '';
+
+            const metaData = [
+                { label: 'Год публикации / Жарияланған жылы', value: book.first_publish_date || book.publish_date || 'N/A' },
+                { label: 'Издатель / Баспагер', value: book.publishers ? book.publishers.join(', ') : 'N/A' },
+                { label: 'Страниц / Беттер', value: book.number_of_pages || 'N/A' },
+                { label: 'ISBN', value: book.isbn_13 ? book.isbn_13[0] : (book.isbn_10 ? book.isbn_10[0] : 'N/A') },
+                { label: 'Язык / Тіл', value: book.languages ? book.languages.map(l => l.key.replace('/languages/', '')).join(', ') : 'N/A' },
+                { label: 'Рейтинг / Рейтинг', value: book.ratings_average ? `${book.ratings_average.toFixed(1)}/5` : 'N/A' }
+            ];
+
+            metaData.forEach(meta => {
+                const metaItem = document.createElement('div');
+                metaItem.className = 'meta-item';
+                metaItem.innerHTML = `<span class="meta-label">${meta.label}:</span>${meta.value}`;
+                metaGrid.appendChild(metaItem);
+            });
+
+            // Описание
+            let description = 'Описание недоступно / Сипаттама қолжетімсіз';
+            if (book.description) {
+                description = typeof book.description === 'string' ? book.description : book.description.value;
+            }
+            document.getElementById('bookDescription').textContent = description;
+
+            // Темы/жанры
+            if (book.subjects && book.subjects.length > 0) {
+                document.getElementById('bookSubjectsContainer').style.display = 'block';
+                const subjectsContainer = document.getElementById('bookSubjects');
+                subjectsContainer.innerHTML = '';
+                
+                book.subjects.slice(0, 10).forEach(subject => {
+                    const tag = document.createElement('span');
+                    tag.className = 'subject-tag';
+                    tag.textContent = subject;
+                    subjectsContainer.appendChild(tag);
+                });
+            }
+
+            // Ссылка на чтение - открываем встроенный просмотрщик
+            const readLink = document.getElementById('readOnlineLink');
+            if (book.key) {
+                const workId = book.key.replace('/works/', '');
+                readLink.href = `/reader/${workId}`;
+                readLink.target = '_self';
+            }
+        }
+
+        function showError() {
+            document.getElementById('loadingIndicator').style.display = 'none';
+            document.getElementById('errorMessage').style.display = 'block';
+        }
+
+        let currentBook = null;
+
+        async function addToLibrary() {
+            if (!currentBook) {
+                showToast('Книга еще не загружена / Кітап әлі жүктелмеген', 'warning');
+                return;
+            }
+
+            try {
+                showLoading();
+                
+                // Подготавливаем данные книги
+                const bookData = {
+                    openLibraryId: currentBook.key,
+                    title: currentBook.title,
+                    author: currentBook.authorNames || 'Неизвестный автор',
+                    description: currentBook.description?.value || currentBook.description || 'Описание отсутствует',
+                    coverUrl: currentBook.covers && currentBook.covers[0] 
+                        ? `https://covers.openlibrary.org/b/id/${currentBook.covers[0]}-L.jpg` 
+                        : null,
+                    publishYear: currentBook.first_publish_date ? 
+                        parseInt(currentBook.first_publish_date.match(/\d{4}/)?.[0]) : null,
+                    isbn: currentBook.isbn_13?.[0] || currentBook.isbn_10?.[0] || null
+                };
+
+                console.log('Отправка данных книги:', bookData);
+
+                const response = await fetch('/api/library/add-from-openlibrary', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(bookData)
+                });
+
+                console.log('Статус ответа:', response.status);
+
+                if (response.status === 401 || response.status === 403) {
+                    hideLoading();
+                    showToast('Пожалуйста, войдите в систему / Жүйеге кіріңіз', 'warning');
+                    setTimeout(() => window.location.href = '/login', 1500);
+                    return;
+                }
+
+                const result = await response.json();
+                console.log('Результат:', result);
+                hideLoading();
+
+                if (response.ok) {
+                    showToast(result.message || 'Книга добавлена в избранное!', 'success');
+                } else {
+                    showToast(result.message || 'Ошибка при добавлении книги', 'error');
+                }
+            } catch (error) {
+                hideLoading();
+                console.error('Ошибка при добавлении книги:', error);
+                showToast('Ошибка при добавлении книги. Проверьте консоль.', 'error');
+            }
+        }
+
+        // Загружаем детали книги при загрузке страницы
+        loadBookDetails();
+    </script>
+</body>
+</html>

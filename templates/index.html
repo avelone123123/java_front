@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Онлайн Кітапхана - Электронная Библиотека</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Main Stylesheet -->
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <nav>
+                <a href="/" class="logo">
+                    <span>Онлайн Кітапхана</span>
+                </a>
+                <ul class="nav-links">
+                    <li><a href="/" data-tooltip="Главная страница">Главная / Басты</a></li>
+                    <li><a href="/books" data-tooltip="Каталог книг">Каталог / Каталог</a></li>
+                    <li th:if="${isAuthenticated}">
+                        <a href="/profile" data-tooltip="Мой профиль">Профиль / Профиль</a>
+                    </li>
+                    <li th:if="${isAuthenticated}">
+                        <div class="user-info">
+                            <div class="user-avatar" th:text="${user != null ? #strings.substring(user.firstName, 0, 1).toUpperCase() : 'U'}">U</div>
+                            <span th:text="${user != null ? user.firstName : 'User'}">User</span>
+                        </div>
+                    </li>
+                    <li th:if="${isAuthenticated}">
+                        <form th:action="@{/logout}" method="post" style="display: inline;">
+                            <button type="submit" data-tooltip="Выйти из системы">Выход / Шығу</button>
+                        </form>
+                    </li>
+                    <li th:unless="${isAuthenticated}">
+                        <a href="/login" data-tooltip="Войти в систему">Вход / Кіру</a>
+                    </li>
+                    <li th:unless="${isAuthenticated}">
+                        <a href="/register" data-tooltip="Создать аккаунт">Регистрация / Тіркелу</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- Сообщение об успешном выходе -->
+        <div th:if="${param.logout}" class="alert alert-success">
+            Вы успешно вышли из системы / Сіз жүйеден сәтті шықтыңыз
+        </div>
+
+        <section class="hero">
+            <h1>
+                <span>Добро пожаловать в мир книг!</span>
+            </h1>
+            <h1>
+                <span>Кітаптар әлеміне қош келдіңіз!</span>
+            </h1>
+            <p>Миллионы книг доступны онлайн. Читайте, изучайте, развивайтесь!</p>
+            <p>Миллиондаған кітаптар онлайн қолжетімді. Оқыңыз, үйреніңіз, дамыңыз!</p>
+
+            <div class="search-box">
+                <input type="text" 
+                       id="searchInput" 
+                       placeholder="Поиск книг по названию, автору... / Кітапты атауы, авторы бойынша іздеу..."
+                       autocomplete="off">
+                <button class="search-btn" onclick="searchBooks()">
+                    Поиск / Іздеу
+                </button>
+            </div>
+
+            <div class="cta-buttons" style="display: flex; justify-content: center; gap: 20px; margin-top: 40px;">
+                <a href="/books" class="btn btn-primary btn-large">Каталог книг / Кітаптар каталогы</a>
+                <a href="/register" class="btn btn-secondary btn-large" th:unless="${isAuthenticated}">Начать читать / Оқуды бастау</a>
+            </div>
+        </section>
+
+        <section class="stats">
+            <div class="stat-card">
+                <div class="stat-number" data-target="100">0</div>
+                <div class="stat-label">Книг в каталоге<br>Каталогтағы кітаптар</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" data-target="2">0</div>
+                <div class="stat-label">Активных читателей<br>Белсенді оқырмандар</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" data-target="100">0</div>
+                <div class="stat-label">Жанров<br>Жанрлар</div>
+            </div>
+        </section>
+
+        <section class="features">
+            <div class="feature-card">
+                <h3>Поиск книг</h3>
+                <p>Миллионы книг из Open Library API доступны для поиска и чтения</p>
+                <p style="font-size: 14px; opacity: 0.7; margin-top: 10px;">
+                    Іздеу және оқу үшін қолжетімді миллиондаған кітаптар
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <h3>Личная библиотека</h3>
+                <p>Создайте свою коллекцию любимых книг и отслеживайте прогресс чтения</p>
+                <p style="font-size: 14px; opacity: 0.7; margin-top: 10px;">
+                    Таңдаулы кітаптар жинағын жасаңыз
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <h3>Избранное</h3>
+                <p>Добавляйте книги в избранное и получайте персональные рекомендации</p>
+                <p style="font-size: 14px; opacity: 0.7; margin-top: 10px;">
+                    Таңдаулыға кітаптарды қосыңыз
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <h3>Статистика чтения</h3>
+                <p>Отслеживайте свои достижения и прогресс в чтении книг</p>
+                <p style="font-size: 14px; opacity: 0.7; margin-top: 10px;">
+                    Оқу прогресін және жетістіктерді қадағалаңыз
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <h3>Многоязычность</h3>
+                <p>Интерфейс на русском и казахском языках для вашего удобства</p>
+                <p style="font-size: 14px; opacity: 0.7; margin-top: 10px;">
+                    Орыс және қазақ тілдеріндегі интерфейс
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <h3>Доступно везде</h3>
+                <p>Читайте на любом устройстве - компьютер, планшет, телефон</p>
+                <p style="font-size: 14px; opacity: 0.7; margin-top: 10px;">
+                    Кез келген құрылғыда оқыңыз
+                </p>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 Онлайн Кітапхана. Все права защищены / Барлық құқықтар қорғалған.</p>
+            <p style="margin-top: 10px; opacity: 0.8;">
+                Создано для любителей чтения / Кітап оқығандарға арналған
+            </p>
+        </div>
+    </footer>
+
+    <!-- Main JavaScript -->
+    <script th:src="@{/js/main.js}"></script>
+    
+    <script>
+        function searchBooks() {
+            const query = document.getElementById('searchInput').value;
+            if (query.trim()) {
+                showLoading();
+                window.location.href = '/books?search=' + encodeURIComponent(query);
+            } else {
+                showToast('Пожалуйста, введите поисковый запрос', 'warning');
+            }
+        }
+
+        // Обработка Enter в поле поиска
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) {
+                searchInput.addEventListener('keypress', function(event) {
+                    if (event.key === 'Enter') {
+                        searchBooks();
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
