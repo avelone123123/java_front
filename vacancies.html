@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вакансии -  Mansap</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <a href="/index.html" style="text-decoration: none; color: inherit;"><h2>🎓 Mansap</h2></a>
+            </div>
+            <div class="nav-menu">
+                <a href="/index.html">Главная</a>
+                <a href="/vacancies.html">Вакансии</a>
+                <a href="/profile.html" id="profileLink" style="display: none;">Профиль</a>
+                <a href="/login.html" class="btn-outline" id="loginLink">Вход</a>
+                <a href="/register.html" class="btn-primary" id="registerLink">Регистрация</a>
+                <a href="#" class="btn-outline" id="logoutLink" style="display: none;" onclick="logout()">Выход</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="page-header">
+        <div class="container">
+            <h1>Найдите работу мечты</h1>
+            <p>Более <span id="totalVacancies">0</span> активных вакансий от ведущих компаний</p>
+        </div>
+    </div>
+
+    <div class="search-section">
+        <div class="container">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Поиск по вакансиям (например: Java, Python, Менеджер...)">
+                <button class="btn-primary" onclick="searchVacancies()">🔍 Искать</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="vacancies-container">
+        <div class="container">
+            <div id="loadingSpinner" class="loading">
+                <div class="spinner"></div>
+                <p>Загрузка вакансий...</p>
+            </div>
+            <div id="vacanciesList"></div>
+            <div id="noVacancies" style="display: none; text-align: center; padding: 3rem;">
+                <h3>Вакансий не найдено</h3>
+                <p>Попробуйте изменить параметры поиска</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно для подачи заявки -->
+    <div id="vacancyModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeVacancyModal()">&times;</span>
+            <div id="modalVacancyDetails"></div>
+            <div id="applicationForm" style="display: none;">
+                <h3>Подать заявку</h3>
+                <div class="form-group">
+                    <label>Сопроводительное письмо</label>
+                    <textarea id="coverLetterText" rows="6" placeholder="Расскажите, почему вы подходите на эту позицию..." style="width: 100%; padding: 0.75rem; border: 2px solid var(--border-color); border-radius: 8px;"></textarea>
+                </div>
+                <div id="applyError" class="error-message"></div>
+                <div id="applySuccess" class="success-message"></div>
+                <button class="btn-primary" onclick="submitApplication()" style="width: 100%; margin-top: 1rem;">📤 Отправить заявку</button>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 Mansap. Все права защищены.</p>
+        </div>
+    </footer>
+
+    <script src="/js/app.js"></script>
+    <script>
+        // Проверяем авторизацию
+        checkAuth();
+        
+        // Загружаем вакансии
+        loadVacancies();
+        
+        // Поиск при нажатии Enter
+        document.getElementById('searchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchVacancies();
+            }
+        });
+    </script>
+</body>
+</html>

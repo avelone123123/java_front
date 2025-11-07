@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mansap - Найди работу мечты</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <h2>🎓 Mansap</h2>
+            </div>
+            <div class="nav-menu">
+                <a href="/index.html">Главная</a>
+                <a href="/vacancies.html">Вакансии</a>
+                <a href="/profile.html" id="profileLink" style="display: none;">Профиль</a>
+                <a href="/login.html" class="btn-outline" id="loginLink">Вход</a>
+                <a href="/register.html" class="btn-primary" id="registerLink">Регистрация</a>
+                <a href="#" class="btn-outline" id="logoutLink" style="display: none;" onclick="logout()">Выход</a>
+            </div>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1 class="hero-title">Найди работу своей мечты</h1>
+                <p class="hero-subtitle">Лучшая платформа для студентов и выпускников. Тысячи вакансий от ведущих компаний Казахстана.</p>
+                <div class="hero-buttons">
+                    <a href="/register.html" id="heroStartButton" class="btn-large btn-primary">✨ Начать поиск</a>
+                    <a href="/vacancies.html" id="heroSecondButton" class="btn-large btn-outline">🔍 Смотреть вакансии</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="features">
+        <div class="container">
+            <h2 class="section-title">Почему выбирают нас?</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🎯</div>
+                    <h3>Тысячи вакансий</h3>
+                    <p>Стажировки и вакансии от ведущих компаний Казахстана</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <h3>Быстрый отклик</h3>
+                    <p>Подавайте заявки в один клик и получайте ответ в течение 24 часов</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🌍</div>
+                    <h3>Многоязычность</h3>
+                    <p>Поддержка русского, казахского и английского языков</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">💼</div>
+                    <h3>Для студентов</h3>
+                    <p>Специальные программы стажировки для студентов и выпускников</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="stats">
+        <div class="container">
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-number" id="vacanciesCount">0</div>
+                    <div class="stat-label">Активных вакансий</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="companiesCount">0+</div>
+                    <div class="stat-label">Компаний-партнеров</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">95%</div>
+                    <div class="stat-label">Успешных трудоустройств</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="cta">
+        <div class="container">
+            <h2>Готовы начать карьеру?</h2>
+            <p>Присоединяйтесь к тысячам студентов, которые уже нашли работу через наш портал</p>
+            <a href="/register.html" class="btn-large btn-primary">Зарегистрироваться бесплатно</a>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 Job Portal. Все права защищены.</p>
+        </div>
+    </footer>
+
+    <script src="/js/app.js"></script>
+    <script>
+        // Проверяем авторизацию при загрузке страницы
+        checkAuth();
+        
+        // Загружаем количество активных вакансий
+        fetchVacanciesCount();
+        
+        // Изменяем кнопки в зависимости от авторизации
+        const heroButton = document.getElementById('heroStartButton');
+        const heroSecondButton = document.getElementById('heroSecondButton');
+        
+        if (isAuthenticated()) {
+            const user = getUser();
+            if (user && user.role === 'EMPLOYER') {
+                // Для работодателя
+                heroButton.href = '/create-vacancy.html';
+                heroButton.innerHTML = '➕ Создать вакансию';
+                heroSecondButton.href = '/profile.html';
+                heroSecondButton.innerHTML = '📋 Мои вакансии';
+            } else {
+                // Для студента/выпускника
+                heroButton.href = '/vacancies.html';
+                heroButton.innerHTML = '🔍 Искать вакансии';
+                heroSecondButton.href = '/profile.html';
+                heroSecondButton.innerHTML = '👤 Мой профиль';
+            }
+        }
+    </script>
+</body>
+</html>
